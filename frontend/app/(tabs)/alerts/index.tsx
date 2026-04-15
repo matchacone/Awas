@@ -1,7 +1,9 @@
-import { Text } from "react-native";
+import { View, Text } from "react-native";
 
 export default function Alerts() {
   return (
-    <Text>Reports page</Text>
+    <View className = "flex-1 items-center justify-center">
+      <Text className = "text-white">Alerts page</Text>  
+    </View>
   )
 }

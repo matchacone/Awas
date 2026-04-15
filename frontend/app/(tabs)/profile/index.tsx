@@ -1,8 +1,10 @@
-import { Text } from "react-native";
+import { View, Text } from "react-native";
 
 
 export default function Profile() {
   return (
-    <Text>Profile Page</Text>
+    <View className = "flex-1 items-center justify-center">
+      <Text className = "text-white">Profile Page</Text>
+    </View>
   )
 }

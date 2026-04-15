@@ -1,8 +1,10 @@
-import { Text } from "react-native";
+import { View, Text } from "react-native";
 
 
 export default function AddReport() {
   return (
-    <Text className = "text-white">Report</Text>
+    <View className = "flex-1 items-center justify-center">
+      <Text className = "text-white">Add Reports Page</Text>
+    </View>
   )
 }
