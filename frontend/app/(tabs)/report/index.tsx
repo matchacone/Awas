@@ -1,10 +1,8 @@
-import { View, Text } from "react-native";
+import ReportScreen from "@/app/features/report/components/report-screen";
 
 
 export default function AddReport() {
   return (
-    <View className = "flex-1 items-center justify-center">
-      <Text className = "text-white">Add Reports Page</Text>
-    </View>
+    <ReportScreen />
   )
 }
