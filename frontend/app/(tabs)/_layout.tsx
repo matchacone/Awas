@@ -59,14 +59,14 @@ export default function TabLayout() {
         name="history/index"
         options={{
           title: 'History',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="note" color={color} />
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="clock.fill" color={color} />
         }}
       />
       <Tabs.Screen
         name="profile/index"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="brain.head.profile.fill" color={color} />
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />
         }}
       />
     </Tabs>

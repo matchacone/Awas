@@ -1,9 +1,7 @@
-import { View, Text } from "react-native";
+import AlertsScreen from "@/app/features/alerts/components/alerts-screen";
 
 export default function Alerts() {
   return (
-    <View className = "flex-1 items-center justify-center">
-      <Text className = "text-white">Alerts page</Text>  
-    </View>
+    <AlertsScreen />
   )
 }
