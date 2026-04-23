@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash *)",
+      "Bash(npm search *)",
+      "Read(//c/c/Users/Simon Gabriel/Desktop/COLLEGE/PROJECTS/Awas/frontend/**)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(npx tsc *)",
+      "Bash(node -e \"require\\('leaflet'\\); require\\('react-leaflet'\\); require\\('leaflet.heat'\\); console.log\\('OK'\\)\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('main:', d.get\\('main','none'\\), 'name:', d.get\\('name','none'\\)\\)\")",
+      "Bash(npx next *)",
+      "Bash(npm run *)"
+    ]
+  }
+}
