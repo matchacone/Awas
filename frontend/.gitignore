@@ -42,3 +42,6 @@ next-env.d.ts
 
 # brainstorming sessions
 .superpowers/
+
+# claude docs
+.docs/
