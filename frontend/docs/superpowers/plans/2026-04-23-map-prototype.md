@@ -15,7 +15,7 @@
 | File | Action | Responsibility |
 |---|---|---|
 | `features/map/types.ts` | Create | `Report` type and `ReportType` union |
-| `features/map/leaflet-heat.d.ts` | Create | TypeScript declaration for leaflet-heat |
+| `features/map/leaflet-heat.d.ts` | ~~Create~~ Skipped | Superseded by `@types/leaflet.heat` (installed in Task 1) |
 | `features/map/useReports.ts` | Create | localStorage hook — load, seed, add reports |
 | `features/map/MapView.tsx` | Create | Leaflet map + OpenStreetMap tiles + heatmap layer |
 | `features/map/ReportModal.tsx` | Create | Center modal — type picker, description, submit |
@@ -29,16 +29,19 @@
 
 **Files:** none (package.json modified by npm)
 
-- [ ] **Step 1: Install react-leaflet, leaflet, and leaflet-heat**
+- [ ] **Step 1: Install react-leaflet, leaflet, and leaflet.heat**
+
+> **Note:** The npm package is `leaflet.heat` (dot), not `leaflet-heat` (hyphen). Also install `@types/leaflet.heat` — it augments the `leaflet` module with `L.heatLayer()` types, making `features/map/leaflet-heat.d.ts` unnecessary.
 
 ```bash
-npm install leaflet react-leaflet leaflet-heat
+npm install leaflet react-leaflet leaflet.heat
+npm install --save-dev @types/leaflet.heat
 ```
 
 If you get peer dependency warnings about React version, add `--legacy-peer-deps`:
 
 ```bash
-npm install leaflet react-leaflet leaflet-heat --legacy-peer-deps
+npm install leaflet react-leaflet leaflet.heat --legacy-peer-deps
 ```
 
 Expected output: packages added, no errors.
