@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet.heat'
@@ -11,15 +11,15 @@ const DEFAULT_ZOOM = 13
 
 type HeatmapLayerProps = {
   reports: Report[]
-  mapRef: React.MutableRefObject<L.Map | null>
+  map: L.Map | null
 }
 
-function HeatmapLayer({ reports, mapRef }: HeatmapLayerProps) {
+function HeatmapLayer({ reports, map }: HeatmapLayerProps) {
   const heatRef = useRef<L.Layer | null>(null)
 
   useEffect(() => {
-    const map = mapRef.current
     if (!map) return
+    if (!map.getPane('overlayPane')) return
 
     if (heatRef.current) {
       map.removeLayer(heatRef.current)
@@ -41,7 +41,7 @@ function HeatmapLayer({ reports, mapRef }: HeatmapLayerProps) {
     return () => {
       if (heatRef.current) map.removeLayer(heatRef.current)
     }
-  }, [mapRef, reports])
+  }, [map, reports])
 
   return null
 }
@@ -53,6 +53,7 @@ export type MapViewProps = {
 
 export default function MapView({ reports, mapRef }: MapViewProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
+  const [map, setMap] = useState<L.Map | null>(null)
 
   useEffect(() => {
     const container = mapContainerRef.current
@@ -67,23 +68,27 @@ export default function MapView({ reports, mapRef }: MapViewProps) {
       delete (container as { _leaflet_id?: number })._leaflet_id
     }
 
-    const map = L.map(container, {
+    const createdMap = L.map(container, {
       zoomControl: false,
       attributionControl: false,
     }).setView(CEBU_CENTER, DEFAULT_ZOOM)
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
+      minZoom: 0,
+      maxZoom: 20,
       attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map)
+        '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(createdMap)
 
-    mapRef.current = map
+    mapRef.current = createdMap
+    setMap(createdMap)
 
     return () => {
-      map.remove()
-      if (mapRef.current === map) {
+      createdMap.remove()
+      if (mapRef.current === createdMap) {
         mapRef.current = null
       }
+      setMap(null)
       if ('_leaflet_id' in container) {
         delete (container as { _leaflet_id?: number })._leaflet_id
       }
@@ -94,7 +99,7 @@ export default function MapView({ reports, mapRef }: MapViewProps) {
   return (
     <>
       <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
-      <HeatmapLayer reports={reports} mapRef={mapRef} />
+      <HeatmapLayer reports={reports} map={map} />
     </>
   )
 }
