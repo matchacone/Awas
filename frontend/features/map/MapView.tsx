@@ -46,6 +46,78 @@ function HeatmapLayer({ reports, map }: HeatmapLayerProps) {
   return null
 }
 
+const PIN_ZOOM_THRESHOLD = 15
+
+const PIN_COLORS: Record<string, string> = {
+  outage: '#ef4444',
+  low_pressure: '#f97316',
+}
+
+type PinLayerProps = {
+  reports: Report[]
+  map: L.Map | null
+}
+
+function PinLayer({ reports, map }: PinLayerProps) {
+  const layerGroupRef = useRef<L.LayerGroup | null>(null)
+
+  useEffect(() => {
+    if (!map) return
+
+    // Build a fresh LayerGroup from active reports
+    if (layerGroupRef.current) {
+      layerGroupRef.current.clearLayers()
+      map.removeLayer(layerGroupRef.current)
+    }
+
+    const group = L.layerGroup()
+
+    reports
+      .filter(r => r.active)
+      .forEach(r => {
+        L.circleMarker([r.lat, r.lng], {
+          radius: 8,
+          color: '#ffffff',
+          weight: 1.5,
+          fillColor: PIN_COLORS[r.type] ?? '#ef4444',
+          fillOpacity: 0.9,
+        }).addTo(group)
+      })
+
+    layerGroupRef.current = group
+
+    // Show immediately if already zoomed in enough
+    if (map.getZoom() >= PIN_ZOOM_THRESHOLD) {
+      group.addTo(map)
+    }
+
+    function handleZoomEnd() {
+      if (!layerGroupRef.current) return
+      if (map.getZoom() >= PIN_ZOOM_THRESHOLD) {
+        if (!map.hasLayer(layerGroupRef.current)) {
+          layerGroupRef.current.addTo(map)
+        }
+      } else {
+        if (map.hasLayer(layerGroupRef.current)) {
+          map.removeLayer(layerGroupRef.current)
+        }
+      }
+    }
+
+    map.on('zoomend', handleZoomEnd)
+
+    return () => {
+      map.off('zoomend', handleZoomEnd)
+      if (layerGroupRef.current) {
+        map.removeLayer(layerGroupRef.current)
+        layerGroupRef.current = null
+      }
+    }
+  }, [map, reports])
+
+  return null
+}
+
 export type MapViewProps = {
   reports: Report[]
   mapRef: React.MutableRefObject<L.Map | null>
@@ -100,6 +172,7 @@ export default function MapView({ reports, mapRef }: MapViewProps) {
     <>
       <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
       <HeatmapLayer reports={reports} map={map} />
+      <PinLayer reports={reports} map={map} />
     </>
   )
 }

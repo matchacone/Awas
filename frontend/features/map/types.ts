@@ -7,4 +7,5 @@ export type Report = {
   lng: number
   description?: string
   timestamp: string
+  active?: boolean
 }

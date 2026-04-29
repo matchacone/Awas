@@ -6,13 +6,13 @@ import type { Report, ReportType } from './types'
 const STORAGE_KEY = 'awas_reports'
 
 const SEED_REPORTS: Report[] = [
-  { id: 's1', type: 'outage',       lat: 10.3157, lng: 123.8854, timestamp: new Date(Date.now() - 3_600_000).toISOString() },
-  { id: 's2', type: 'low_pressure', lat: 10.3200, lng: 123.8900, timestamp: new Date(Date.now() - 7_200_000).toISOString() },
-  { id: 's3', type: 'outage',       lat: 10.3100, lng: 123.8800, timestamp: new Date(Date.now() - 1_800_000).toISOString() },
-  { id: 's4', type: 'outage',       lat: 10.3250, lng: 123.8820, description: 'No water since 6am', timestamp: new Date(Date.now() - 900_000).toISOString() },
-  { id: 's5', type: 'low_pressure', lat: 10.3180, lng: 123.8950, timestamp: new Date(Date.now() - 5_400_000).toISOString() },
-  { id: 's6', type: 'outage',       lat: 10.3080, lng: 123.8870, timestamp: new Date(Date.now() - 2_700_000).toISOString() },
-  { id: 's7', type: 'low_pressure', lat: 10.3300, lng: 123.8830, description: 'Very low flow in the morning', timestamp: new Date(Date.now() - 10_800_000).toISOString() },
+  { id: 's1', type: 'outage',       lat: 10.3157, lng: 123.8854, timestamp: new Date(Date.now() - 3_600_000).toISOString(),  active: true },
+  { id: 's2', type: 'low_pressure', lat: 10.3200, lng: 123.8900, timestamp: new Date(Date.now() - 7_200_000).toISOString(),  active: true },
+  { id: 's3', type: 'outage',       lat: 10.3100, lng: 123.8800, timestamp: new Date(Date.now() - 1_800_000).toISOString(),  active: true },
+  { id: 's4', type: 'outage',       lat: 10.3250, lng: 123.8820, description: 'No water since 6am', timestamp: new Date(Date.now() - 900_000).toISOString(), active: true },
+  { id: 's5', type: 'low_pressure', lat: 10.3180, lng: 123.8950, timestamp: new Date(Date.now() - 5_400_000).toISOString(),  active: true },
+  { id: 's6', type: 'outage',       lat: 10.3080, lng: 123.8870, timestamp: new Date(Date.now() - 2_700_000).toISOString(),  active: true },
+  { id: 's7', type: 'low_pressure', lat: 10.3300, lng: 123.8830, description: 'Very low flow in the morning', timestamp: new Date(Date.now() - 10_800_000).toISOString(), active: true },
 ]
 
 function loadFromStorage(): Report[] {
@@ -49,6 +49,7 @@ export function useReports() {
       lng,
       description,
       timestamp: new Date().toISOString(),
+      active: true,
     }
     setReports(prev => {
       const next = [...prev, report]
