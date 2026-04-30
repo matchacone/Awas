@@ -4,31 +4,30 @@ import dynamic from 'next/dynamic'
 import { useRef, useState } from 'react'
 import type L from 'leaflet'
 import { useReports } from './useReports'
-import ReportModal from './ReportModal'
+const ReportModal = dynamic(() => import('./ReportModal'), { ssr: false })
 import AlertsModal from './AlertsModal'
 import UpdatesModal from './UpdatesModal'
-<<<<<<< HEAD
 import ProfileModal from './ProfileModal'
-=======
 import ReportDetailsBar from './ReportDetailsBar'
->>>>>>> 2b24cd3ab1441bacfaa876188cc56b73e8e12262
 import type { ReportType } from './types'
-import { DropIcon, PlusIcon } from '@phosphor-icons/react'
+import { DropIcon, PlusIcon, SignIn, SignOut } from '@phosphor-icons/react'
+import AuthModal from './AuthModal'
 
 const MapView = dynamic(() => import('./MapView'), { ssr: false })
 
 export default function MapPage() {
   const { reports, addReport, addComment, addReaction } = useReports()
   const [isModalOpen, setIsModalOpen] = useState(false)
-<<<<<<< HEAD
-=======
   const [isAlertsOpen, setIsAlertsOpen] = useState(false)
   const [isUpdatesOpen, setIsUpdatesOpen] = useState(false)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isSignedIn, setIsSignedIn] = useState(false)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null)
->>>>>>> 2b24cd3ab1441bacfaa876188cc56b73e8e12262
-  // cast needed: useRef<T|null>(null) returns RefObject (readonly) in React 19 types
   const mapRef = useRef<L.Map | null>(null) as React.MutableRefObject<L.Map | null>
-
+  const [modalCenter, setModalCenter] = useState<{ lat: number; lng: number } | undefined>(
+    undefined
+  )
   function handleSubmit(type: ReportType, lat: number, lng: number, description?: string) {
     addReport(type, lat, lng, description)
     setIsModalOpen(false)
@@ -83,9 +82,13 @@ export default function MapPage() {
           </nav>
         </div>
 
-        <div className="flex flex-1 items-center justify-end min-w-0">
+        <div className="flex flex-1 items-center justify-end gap-2 min-w-0">
           <button
             onClick={() => {
+              if (!isSignedIn) {
+                setIsAuthModalOpen(true)
+                return
+              }
               const center = mapRef.current?.getCenter()
               setModalCenter(center ? { lat: center.lat, lng: center.lng } : undefined)
               setIsModalOpen(true)
@@ -96,6 +99,25 @@ export default function MapPage() {
             <PlusIcon />
             Add Report
           </button>
+          {isSignedIn ? (
+            <button
+              onClick={() => setIsSignedIn(false)}
+              className="flex items-center gap-2 px-3 py-1 rounded-md bg-transparent hover:bg-neutral-200/60 hover:text-black text-white text-[14px] font-semibold tracking-wide transition-colors ease-in-out duration-400"
+              aria-label="Sign out"
+            >
+              <SignOut size={16} />
+              Sign Out
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="flex items-center gap-2 px-3 py-1 rounded-md bg-transparent hover:bg-neutral-200/60 hover:text-black text-white text-[14px] font-semibold tracking-wide transition-colors ease-in-out duration-400"
+              aria-label="Sign in"
+            >
+              <SignIn size={16} />
+              Sign In
+            </button>
+          )}
         </div>
       </div>
 
@@ -220,6 +242,17 @@ export default function MapPage() {
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleSubmit}
           initialCenter={modalCenter}
+        />
+      )}
+
+      {/* Auth Modal */}
+      {isAuthModalOpen && (
+        <AuthModal
+          onClose={() => setIsAuthModalOpen(false)}
+          onLogin={() => {
+            setIsSignedIn(true)
+            setIsAuthModalOpen(false)
+          }}
         />
       )}
     </div>
