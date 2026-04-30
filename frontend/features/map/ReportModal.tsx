@@ -126,6 +126,26 @@ export default function ReportModal({ onClose, onSubmit, initialCenter }: Props)
               >
                 💧 Low Pressure
               </button>
+              <button
+                onClick={() => setType('pipe_leak')}
+                className={`flex-1 py-3 rounded-lg border text-center text-xs font-semibold transition-colors ${
+                  type === 'pipe_leak'
+                    ? 'bg-blue-500/20 border-blue-400 text-blue-400'
+                    : 'bg-white/[0.04] border-white/10 text-zinc-400 hover:border-white/20'
+                }`}
+              >
+                🛠️ Pipe Leak
+              </button>
+              <button
+                onClick={() => setType('dirty_water')}
+                className={`flex-1 py-3 rounded-lg border text-center text-xs font-semibold transition-colors ${
+                  type === 'dirty_water'
+                    ? 'bg-amber-700/20 border-amber-600 text-amber-400'
+                    : 'bg-white/[0.04] border-white/10 text-zinc-400 hover:border-white/20'
+                }`}
+              >
+                🧪 Dirty Water
+              </button>
             </div>
           </div>
 

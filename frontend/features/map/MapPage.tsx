@@ -7,15 +7,25 @@ import { useReports } from './useReports'
 import ReportModal from './ReportModal'
 import AlertsModal from './AlertsModal'
 import UpdatesModal from './UpdatesModal'
+<<<<<<< HEAD
 import ProfileModal from './ProfileModal'
+=======
+import ReportDetailsBar from './ReportDetailsBar'
+>>>>>>> 2b24cd3ab1441bacfaa876188cc56b73e8e12262
 import type { ReportType } from './types'
 import { DropIcon, PlusIcon } from '@phosphor-icons/react'
 
 const MapView = dynamic(() => import('./MapView'), { ssr: false })
 
 export default function MapPage() {
-  const { reports, addReport } = useReports()
+  const { reports, addReport, addComment, addReaction } = useReports()
   const [isModalOpen, setIsModalOpen] = useState(false)
+<<<<<<< HEAD
+=======
+  const [isAlertsOpen, setIsAlertsOpen] = useState(false)
+  const [isUpdatesOpen, setIsUpdatesOpen] = useState(false)
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null)
+>>>>>>> 2b24cd3ab1441bacfaa876188cc56b73e8e12262
   // cast needed: useRef<T|null>(null) returns RefObject (readonly) in React 19 types
   const mapRef = useRef<L.Map | null>(null) as React.MutableRefObject<L.Map | null>
 
@@ -23,6 +33,8 @@ export default function MapPage() {
     addReport(type, lat, lng, description)
     setIsModalOpen(false)
   }
+
+  const selectedReport = reports.find(report => report.id === selectedReportId)
 
   return (
     <div className="w-full h-screen overflow-hidden flex flex-col">
@@ -91,7 +103,11 @@ export default function MapPage() {
         {/* Map area — shrinks when alerts panel is open */}
         <div className="relative flex-1 transition-all duration-300 ease-in-out">
           {/* Map (full screen, behind everything) */}
-          <MapView reports={reports} mapRef={mapRef} />
+          <MapView
+            reports={reports}
+            mapRef={mapRef}
+            onReportSelect={report => setSelectedReportId(report.id)}
+          />
 
           {/* Legend — bottom left */}
           <div className="absolute bottom-16 left-3 z-999">
@@ -125,16 +141,16 @@ export default function MapPage() {
                       <span className = "w-2.5 h-2.5 rounded-full bg-blue-400" />
                       <p>Pipe Leak</p>
                     </div>
-  
+
                     <p className = "text-[10px] text-gray-400">34</p>
                   </div>
                   
                   <div className = "flex items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
-                      <span className = "w-2.5 h-2.5 rounded-full bg-amber-950" />
-                      <p>Low Pressure</p>
+                      <span className = "w-2.5 h-2.5 rounded-full bg-amber-900" />
+                      <p>Dirty Water</p>
                     </div>
-  
+
                     <p className = "text-[10px] text-gray-400">8</p>
                   </div>
                 </div>
@@ -166,13 +182,31 @@ export default function MapPage() {
           </div>
         </div>
 
+        {/* Report details sidebar */}
+        {selectedReport && (
+          <ReportDetailsBar
+            report={selectedReport}
+            onClose={() => setSelectedReportId(null)}
+            onAddComment={description => addComment(selectedReport.id, description)}
+            onAddReaction={(reactionType, commentId, user) =>
+              addReaction(selectedReport.id, reactionType, user, commentId)
+            }
+          />
+        )}
+
         {/* Alerts side panel — pushes map left */}
         {isAlertsOpen && (
-          <AlertsModal onClose={() => setIsAlertsOpen(false)} reports={reports} />
+          <AlertsModal
+            onClose={() => setIsAlertsOpen(false)}
+            reports={reports}
+          />
         )}
 
         {isUpdatesOpen && (
-          <UpdatesModal onClose={() => setIsUpdatesOpen(false)} reports={reports} />
+          <UpdatesModal
+            onClose={() => setIsUpdatesOpen(false)}
+            reports={reports}
+          />
         )}
 
         {isProfileOpen && (

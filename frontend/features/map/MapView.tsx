@@ -46,28 +46,32 @@ function HeatmapLayer({ reports, map }: HeatmapLayerProps) {
   return null
 }
 
-const PIN_ZOOM_THRESHOLD = 15
+const PIN_ZOOM_THRESHOLD = 16
 
 const PIN_COLORS: Record<string, string> = {
   outage: '#ef4444',
   low_pressure: '#f97316',
+  pipe_leak: '#3b82f6',
+  dirty_water: '#b45309',
 }
 
 type PinLayerProps = {
   reports: Report[]
   map: L.Map | null
+  onReportSelect?: (report: Report) => void
 }
 
-function PinLayer({ reports, map }: PinLayerProps) {
+function PinLayer({ reports, map, onReportSelect }: PinLayerProps) {
   const layerGroupRef = useRef<L.LayerGroup | null>(null)
 
   useEffect(() => {
     if (!map) return
+    const mapInstance = map
 
     // Build a fresh LayerGroup from active reports
     if (layerGroupRef.current) {
       layerGroupRef.current.clearLayers()
-      map.removeLayer(layerGroupRef.current)
+      mapInstance.removeLayer(layerGroupRef.current)
     }
 
     const group = L.layerGroup()
@@ -75,45 +79,52 @@ function PinLayer({ reports, map }: PinLayerProps) {
     reports
       .filter(r => r.active)
       .forEach(r => {
-        L.circleMarker([r.lat, r.lng], {
+        const marker = L.circleMarker([r.lat, r.lng], {
           radius: 8,
           color: '#ffffff',
           weight: 1.5,
           fillColor: PIN_COLORS[r.type] ?? '#ef4444',
           fillOpacity: 0.9,
         }).addTo(group)
+
+        marker.on('click', () => {
+          onReportSelect?.(r)
+        })
       })
 
     layerGroupRef.current = group
 
-    // Show immediately if already zoomed in enough
-    if (map.getZoom() >= PIN_ZOOM_THRESHOLD) {
-      group.addTo(map)
-    }
-
-    function handleZoomEnd() {
+    // Handler to toggle group visibility based on current zoom.
+    function handleZoomChange() {
       if (!layerGroupRef.current) return
-      if (map.getZoom() >= PIN_ZOOM_THRESHOLD) {
-        if (!map.hasLayer(layerGroupRef.current)) {
-          layerGroupRef.current.addTo(map)
+      if (mapInstance.getZoom() >= PIN_ZOOM_THRESHOLD) {
+        if (!mapInstance.hasLayer(layerGroupRef.current)) {
+          layerGroupRef.current.addTo(mapInstance)
         }
       } else {
-        if (map.hasLayer(layerGroupRef.current)) {
-          map.removeLayer(layerGroupRef.current)
+        if (mapInstance.hasLayer(layerGroupRef.current)) {
+          mapInstance.removeLayer(layerGroupRef.current)
         }
       }
     }
 
-    map.on('zoomend', handleZoomEnd)
+    // Ensure visibility is correct immediately after creating the group
+    handleZoomChange()
+
+    // Listen for zoom changes and apply visibility rules. Use both 'zoom' (fires continuously)
+    // and 'zoomend' to be responsive and reliable across interactions.
+    mapInstance.on('zoom', handleZoomChange)
+    mapInstance.on('zoomend', handleZoomChange)
 
     return () => {
-      map.off('zoomend', handleZoomEnd)
+      mapInstance.off('zoom', handleZoomChange)
+      mapInstance.off('zoomend', handleZoomChange)
       if (layerGroupRef.current) {
-        map.removeLayer(layerGroupRef.current)
+        mapInstance.removeLayer(layerGroupRef.current)
         layerGroupRef.current = null
       }
     }
-  }, [map, reports])
+  }, [map, reports, onReportSelect])
 
   return null
 }
@@ -121,9 +132,10 @@ function PinLayer({ reports, map }: PinLayerProps) {
 export type MapViewProps = {
   reports: Report[]
   mapRef: React.MutableRefObject<L.Map | null>
+  onReportSelect?: (report: Report) => void
 }
 
-export default function MapView({ reports, mapRef }: MapViewProps) {
+export default function MapView({ reports, mapRef, onReportSelect }: MapViewProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const [map, setMap] = useState<L.Map | null>(null)
 
@@ -172,7 +184,7 @@ export default function MapView({ reports, mapRef }: MapViewProps) {
     <>
       <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
       <HeatmapLayer reports={reports} map={map} />
-      <PinLayer reports={reports} map={map} />
+      <PinLayer reports={reports} map={map} onReportSelect={onReportSelect} />
     </>
   )
 }
