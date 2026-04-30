@@ -220,7 +220,7 @@ function loadFromStorage(): Report[] {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(seeds))
     return seeds
   } catch {
-    return SEED_REPORTS
+    return createSeedReports()
   }
 }
 
@@ -312,7 +312,7 @@ export function useReports() {
       .channel('public:api_comment')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'api_comment' }, payload => {
         const c = (payload.new ?? payload.old) as any
-        const event = payload.event
+        const event = payload.eventType
         setReports(prev => prev.map(rep => {
           if (String(rep.id) !== String(c.outage_id)) return rep
           if (event === 'INSERT') {
@@ -338,7 +338,7 @@ export function useReports() {
       .channel('public:api_reaction')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'api_reaction' }, payload => {
         const rx = (payload.new ?? payload.old) as any
-        const event = payload.event
+        const event = payload.eventType
         setReports(prev => prev.map(rep => {
           if (String(rep.id) !== String(rx.outage_id)) return rep
           if (event === 'INSERT') {
@@ -400,19 +400,20 @@ export function useReports() {
     })
 
     // Persist to Supabase: map to api_outagereport columns and replace optimistic item
-    supabase
-      .from('api_outagereport')
-      .insert({
-        location: '',
-        description: report.description,
-        issuetype: report.type,
-        latitude: report.lat,
-        longitude: report.lng,
-        created_at: new Date().toISOString(),
-        reporter_id: user ? user.id : null,
-      })
-      .select()
-      .then(res => {
+    ;(async () => {
+      try {
+        const res = await supabase
+          .from('api_outagereport')
+          .insert({
+            location: '',
+            description: report.description,
+            issuetype: report.type,
+            latitude: report.lat,
+            longitude: report.lng,
+            created_at: new Date().toISOString(),
+            reporter_id: user ? user.id : null,
+          })
+          .select()
         const inserted = res.data && res.data[0]
         if (!inserted) return
         // Replace optimistic entry (by id) with DB row
@@ -427,8 +428,10 @@ export function useReports() {
           comments: [],
           reactions: [],
         } : r)))
-      })
-      .catch(() => {})
+      } catch {
+        // silent fail — optimistic update remains
+      }
+    })()
   }
 
   // For now use a local mock username. In future this should come from auth.
@@ -459,16 +462,17 @@ export function useReports() {
     // Persist comment to Supabase (api_comment expects outage_id)
     const outageId = Number(reportId)
     if (!Number.isNaN(outageId)) {
-      supabase
-        .from('api_comment')
-        .insert({
-          description: trimmed,
-          outage_id: outageId,
-          user_id: user ? user.id : null,
-          created_at: new Date().toISOString(),
-        })
-        .select()
-        .then(res => {
+      ;(async () => {
+        try {
+          const res = await supabase
+            .from('api_comment')
+            .insert({
+              description: trimmed,
+              outage_id: outageId,
+              user_id: user ? user.id : null,
+              created_at: new Date().toISOString(),
+            })
+            .select()
           const inserted = res.data && res.data[0]
           if (!inserted) return
           // Replace the optimistic comment id if possible
@@ -485,8 +489,10 @@ export function useReports() {
               } : c),
             }
           }))
-        })
-        .catch(() => {})
+        } catch {
+          // silent fail
+        }
+      })()
     }
   }
 
@@ -520,17 +526,18 @@ export function useReports() {
 
     // Persist reaction to api_reaction — `is_like` is boolean
     const outageId = Number(reportId)
-    supabase
-      .from('api_reaction')
-      .insert({
-        is_like: reactionType === 'upvote',
-        outage_id: Number.isNaN(outageId) ? null : outageId,
-        comment_id: commentId ? Number(commentId) : null,
-        user_id: user ? user.id : null,
-        created_at: new Date().toISOString(),
-      })
-      .select()
-      .then(res => {
+    ;(async () => {
+      try {
+        const res = await supabase
+          .from('api_reaction')
+          .insert({
+            is_like: reactionType === 'upvote',
+            outage_id: Number.isNaN(outageId) ? null : outageId,
+            comment_id: commentId ? Number(commentId) : null,
+            user_id: user ? user.id : null,
+            created_at: new Date().toISOString(),
+          })
+          .select()
         const inserted = res.data && res.data[0]
         if (!inserted) return
         setReports(prev => prev.map(r => {
@@ -544,8 +551,10 @@ export function useReports() {
             commentId: inserted.comment_id ? String(inserted.comment_id) : undefined,
           } : rx) }
         }))
-      })
-      .catch(() => {})
+      } catch {
+        // silent fail
+      }
+    })()
   }
 
   return { reports, addReport, addComment, addReaction }
