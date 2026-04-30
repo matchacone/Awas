@@ -51,6 +51,8 @@ const PIN_ZOOM_THRESHOLD = 16
 const PIN_COLORS: Record<string, string> = {
   outage: '#ef4444',
   low_pressure: '#f97316',
+  pipe_leak: '#3b82f6',
+  dirty_water: '#b45309',
 }
 
 type PinLayerProps = {

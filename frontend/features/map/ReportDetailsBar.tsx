@@ -4,12 +4,13 @@ import { useMemo, useState } from 'react'
 import type { ReactionType, Report } from './types'
 import { X } from '@phosphor-icons/react'
 
-type Props = {
-  report: Report
-  onClose: () => void
-  onAddComment: (description: string, user?: string) => void
-  onAddReaction: (reactionType: ReactionType, commentId?: string, user?: string) => void
-}
+ type Props = {
+   report: Report
+   onClose: () => void
+   // onAddComment now only accepts the comment text; the parent should resolve the user's name.
+   onAddComment: (description: string) => void
+   onAddReaction: (reactionType: ReactionType, commentId?: string, user?: string) => void
+ }
 
 export default function ReportDetailsBar({ report, onClose, onAddComment, onAddReaction }: Props) {
   const statusLabel = report.type === 'outage' ? 'Critical' : 'In Progress'
@@ -19,7 +20,6 @@ export default function ReportDetailsBar({ report, onClose, onAddComment, onAddR
       : 'bg-amber-500/20 text-amber-400'
 
   const [commentText, setCommentText] = useState('')
-  const [commentUser, setCommentUser] = useState('')
   const [isCommentFormOpen, setIsCommentFormOpen] = useState(false)
 
   const reportReactions = useMemo(
@@ -41,7 +41,9 @@ export default function ReportDetailsBar({ report, onClose, onAddComment, onAddR
   function handleSubmitComment() {
     const trimmed = commentText.trim()
     if (!trimmed) return
-    onAddComment(trimmed, commentUser.trim() || 'You')
+    // Do not collect a name here; the parent should determine the user's name
+    // (e.g. from auth) and display it when rendering comments.
+    onAddComment(trimmed)
     setCommentText('')
     setIsCommentFormOpen(false)
   }
@@ -201,12 +203,7 @@ export default function ReportDetailsBar({ report, onClose, onAddComment, onAddR
             </button>
             {isCommentFormOpen && (
               <div className="space-y-2">
-                <input
-                  value={commentUser}
-                  onChange={event => setCommentUser(event.target.value)}
-                  placeholder="Your name (optional)"
-                  className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-[11px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-white/30"
-                />
+                {/* Name field removed — user's name will be provided by auth and shown automatically */}
                 <textarea
                   value={commentText}
                   onChange={event => setCommentText(event.target.value)}

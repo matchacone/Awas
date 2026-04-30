@@ -125,16 +125,16 @@ export default function MapPage() {
                       <span className = "w-2.5 h-2.5 rounded-full bg-blue-400" />
                       <p>Pipe Leak</p>
                     </div>
-  
+
                     <p className = "text-[10px] text-gray-400">34</p>
                   </div>
                   
                   <div className = "flex items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
-                      <span className = "w-2.5 h-2.5 rounded-full bg-amber-950" />
-                      <p>Low Pressure</p>
+                      <span className = "w-2.5 h-2.5 rounded-full bg-amber-900" />
+                      <p>Dirty Water</p>
                     </div>
-  
+
                     <p className = "text-[10px] text-gray-400">8</p>
                   </div>
                 </div>
@@ -171,9 +171,7 @@ export default function MapPage() {
           <ReportDetailsBar
             report={selectedReport}
             onClose={() => setSelectedReportId(null)}
-            onAddComment={(description, user) =>
-              addComment(selectedReport.id, description, user)
-            }
+            onAddComment={description => addComment(selectedReport.id, description)}
             onAddReaction={(reactionType, commentId, user) =>
               addReaction(selectedReport.id, reactionType, user, commentId)
             }
