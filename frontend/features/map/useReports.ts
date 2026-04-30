@@ -252,7 +252,8 @@ export function useReports() {
     })
   }
 
-  function addComment(reportId: string, description: string, user = 'You') {
+  // For now use a local mock username. In future this should come from auth.
+  function addComment(reportId: string, description: string) {
     const trimmed = description.trim()
     if (!trimmed) return
     setReports(prev => {
@@ -265,7 +266,7 @@ export function useReports() {
             {
               id: crypto.randomUUID(),
               reportId,
-              user,
+              user: 'You',
               description: trimmed,
               createdAt: new Date().toISOString(),
             },

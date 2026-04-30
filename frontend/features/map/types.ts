@@ -1,4 +1,4 @@
-export type ReportType = 'outage' | 'low_pressure'
+export type ReportType = 'outage' | 'low_pressure' | 'pipe_leak' | 'dirty_water'
 
 export type ReactionType = 'upvote' | 'downvote'
 
