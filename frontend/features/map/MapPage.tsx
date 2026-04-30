@@ -7,6 +7,7 @@ import { useReports } from './useReports'
 import ReportModal from './ReportModal'
 import AlertsModal from './AlertsModal'
 import UpdatesModal from './UpdatesModal'
+import ReportDetailsBar from './ReportDetailsBar'
 import type { ReportType } from './types'
 import { DropIcon, PlusIcon } from '@phosphor-icons/react'
 
@@ -16,7 +17,8 @@ export default function MapPage() {
   const { reports, addReport } = useReports()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isAlertsOpen, setIsAlertsOpen] = useState(false)
-  const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
+  const [isUpdatesOpen, setIsUpdatesOpen] = useState(false)
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null)
   // cast needed: useRef<T|null>(null) returns RefObject (readonly) in React 19 types
   const mapRef = useRef<L.Map | null>(null) as React.MutableRefObject<L.Map | null>
 
@@ -26,6 +28,8 @@ export default function MapPage() {
     addReport(type, center.lat, center.lng, description)
     setIsModalOpen(false)
   }
+
+  const selectedReport = reports.find(report => report.id === selectedReportId)
 
   return (
     <div className="w-full h-screen overflow-hidden flex flex-col">
@@ -83,7 +87,11 @@ export default function MapPage() {
         {/* Map area — shrinks when alerts panel is open */}
         <div className="relative flex-1 transition-all duration-300 ease-in-out">
           {/* Map (full screen, behind everything) */}
-          <MapView reports={reports} mapRef={mapRef} />
+          <MapView
+            reports={reports}
+            mapRef={mapRef}
+            onReportSelect={report => setSelectedReportId(report.id)}
+          />
 
           {/* Legend — bottom left */}
           <div className="absolute bottom-16 left-3 z-999">
@@ -158,13 +166,27 @@ export default function MapPage() {
           </div>
         </div>
 
+        {/* Report details sidebar */}
+        {selectedReport && (
+          <ReportDetailsBar
+            report={selectedReport}
+            onClose={() => setSelectedReportId(null)}
+          />
+        )}
+
         {/* Alerts side panel — pushes map left */}
         {isAlertsOpen && (
-          <AlertsModal onClose={() => setIsAlertsOpen(false)} reports={reports} />
+          <AlertsModal
+            onClose={() => setIsAlertsOpen(false)}
+            reports={reports}
+          />
         )}
 
         {isUpdatesOpen && (
-          <UpdatesModal onClose={() => setIsUpdatesOpen(false)} reports={reports} />
+          <UpdatesModal
+            onClose={() => setIsUpdatesOpen(false)}
+            reports={reports}
+          />
         )}
       </div>
 

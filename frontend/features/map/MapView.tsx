@@ -56,18 +56,20 @@ const PIN_COLORS: Record<string, string> = {
 type PinLayerProps = {
   reports: Report[]
   map: L.Map | null
+  onReportSelect?: (report: Report) => void
 }
 
-function PinLayer({ reports, map }: PinLayerProps) {
+function PinLayer({ reports, map, onReportSelect }: PinLayerProps) {
   const layerGroupRef = useRef<L.LayerGroup | null>(null)
 
   useEffect(() => {
     if (!map) return
+    const mapInstance = map
 
     // Build a fresh LayerGroup from active reports
     if (layerGroupRef.current) {
       layerGroupRef.current.clearLayers()
-      map.removeLayer(layerGroupRef.current)
+      mapInstance.removeLayer(layerGroupRef.current)
     }
 
     const group = L.layerGroup()
@@ -75,45 +77,49 @@ function PinLayer({ reports, map }: PinLayerProps) {
     reports
       .filter(r => r.active)
       .forEach(r => {
-        L.circleMarker([r.lat, r.lng], {
+        const marker = L.circleMarker([r.lat, r.lng], {
           radius: 8,
           color: '#ffffff',
           weight: 1.5,
           fillColor: PIN_COLORS[r.type] ?? '#ef4444',
           fillOpacity: 0.9,
         }).addTo(group)
+
+        marker.on('click', () => {
+          onReportSelect?.(r)
+        })
       })
 
     layerGroupRef.current = group
 
     // Show immediately if already zoomed in enough
-    if (map.getZoom() >= PIN_ZOOM_THRESHOLD) {
-      group.addTo(map)
+    if (mapInstance.getZoom() >= PIN_ZOOM_THRESHOLD) {
+      group.addTo(mapInstance)
     }
 
     function handleZoomEnd() {
       if (!layerGroupRef.current) return
-      if (map.getZoom() >= PIN_ZOOM_THRESHOLD) {
-        if (!map.hasLayer(layerGroupRef.current)) {
-          layerGroupRef.current.addTo(map)
+      if (mapInstance.getZoom() >= PIN_ZOOM_THRESHOLD) {
+        if (!mapInstance.hasLayer(layerGroupRef.current)) {
+          layerGroupRef.current.addTo(mapInstance)
         }
       } else {
-        if (map.hasLayer(layerGroupRef.current)) {
-          map.removeLayer(layerGroupRef.current)
+        if (mapInstance.hasLayer(layerGroupRef.current)) {
+          mapInstance.removeLayer(layerGroupRef.current)
         }
       }
     }
 
-    map.on('zoomend', handleZoomEnd)
+    mapInstance.on('zoomend', handleZoomEnd)
 
     return () => {
-      map.off('zoomend', handleZoomEnd)
+      mapInstance.off('zoomend', handleZoomEnd)
       if (layerGroupRef.current) {
-        map.removeLayer(layerGroupRef.current)
+        mapInstance.removeLayer(layerGroupRef.current)
         layerGroupRef.current = null
       }
     }
-  }, [map, reports])
+  }, [map, reports, onReportSelect])
 
   return null
 }
@@ -121,9 +127,10 @@ function PinLayer({ reports, map }: PinLayerProps) {
 export type MapViewProps = {
   reports: Report[]
   mapRef: React.MutableRefObject<L.Map | null>
+  onReportSelect?: (report: Report) => void
 }
 
-export default function MapView({ reports, mapRef }: MapViewProps) {
+export default function MapView({ reports, mapRef, onReportSelect }: MapViewProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const [map, setMap] = useState<L.Map | null>(null)
 
@@ -172,7 +179,7 @@ export default function MapView({ reports, mapRef }: MapViewProps) {
     <>
       <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
       <HeatmapLayer reports={reports} map={map} />
-      <PinLayer reports={reports} map={map} />
+      <PinLayer reports={reports} map={map} onReportSelect={onReportSelect} />
     </>
   )
 }
