@@ -13,13 +13,14 @@ const MapView = dynamic(() => import('./MapView'), { ssr: false })
 export default function MapPage() {
   const { reports, addReport } = useReports()
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalCenter, setModalCenter] = useState<{ lat: number; lng: number } | undefined>(
+    undefined
+  )
   // cast needed: useRef<T|null>(null) returns RefObject (readonly) in React 19 types
   const mapRef = useRef<L.Map | null>(null) as React.MutableRefObject<L.Map | null>
 
-  function handleSubmit(type: ReportType, description?: string) {
-    const center = mapRef.current?.getCenter()
-    if (!center) return
-    addReport(type, center.lat, center.lng, description)
+  function handleSubmit(type: ReportType, lat: number, lng: number, description?: string) {
+    addReport(type, lat, lng, description)
     setIsModalOpen(false)
   }
 
@@ -48,7 +49,11 @@ export default function MapPage() {
 
         <div className="flex flex-1 items-center justify-end min-w-0">
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              const center = mapRef.current?.getCenter()
+              setModalCenter(center ? { lat: center.lat, lng: center.lng } : undefined)
+              setIsModalOpen(true)
+            }}
             className="flex items-center gap-2 px-3 py-1 rounded-md bg-transparent hover:bg-neutral-200/60 hover:text-black text-white text-[14px] font-semibold tracking-wide transition-colors ease-in-out duration-400"
             aria-label="Add report"
           >
@@ -141,6 +146,7 @@ export default function MapPage() {
         <ReportModal
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleSubmit}
+          initialCenter={modalCenter}
         />
       )}
     </div>
