@@ -46,7 +46,7 @@ function HeatmapLayer({ reports, map }: HeatmapLayerProps) {
   return null
 }
 
-const PIN_ZOOM_THRESHOLD = 15
+const PIN_ZOOM_THRESHOLD = 16
 
 const PIN_COLORS: Record<string, string> = {
   outage: '#ef4444',
@@ -92,12 +92,8 @@ function PinLayer({ reports, map, onReportSelect }: PinLayerProps) {
 
     layerGroupRef.current = group
 
-    // Show immediately if already zoomed in enough
-    if (mapInstance.getZoom() >= PIN_ZOOM_THRESHOLD) {
-      group.addTo(mapInstance)
-    }
-
-    function handleZoomEnd() {
+    // Handler to toggle group visibility based on current zoom.
+    function handleZoomChange() {
       if (!layerGroupRef.current) return
       if (mapInstance.getZoom() >= PIN_ZOOM_THRESHOLD) {
         if (!mapInstance.hasLayer(layerGroupRef.current)) {
@@ -110,10 +106,17 @@ function PinLayer({ reports, map, onReportSelect }: PinLayerProps) {
       }
     }
 
-    mapInstance.on('zoomend', handleZoomEnd)
+    // Ensure visibility is correct immediately after creating the group
+    handleZoomChange()
+
+    // Listen for zoom changes and apply visibility rules. Use both 'zoom' (fires continuously)
+    // and 'zoomend' to be responsive and reliable across interactions.
+    mapInstance.on('zoom', handleZoomChange)
+    mapInstance.on('zoomend', handleZoomChange)
 
     return () => {
-      mapInstance.off('zoomend', handleZoomEnd)
+      mapInstance.off('zoom', handleZoomChange)
+      mapInstance.off('zoomend', handleZoomChange)
       if (layerGroupRef.current) {
         mapInstance.removeLayer(layerGroupRef.current)
         layerGroupRef.current = null
