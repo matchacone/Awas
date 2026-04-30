@@ -409,6 +409,7 @@ export function useReports() {
         latitude: report.lat,
         longitude: report.lng,
         created_at: new Date().toISOString(),
+        reporter_id: user ? user.id : null,
       })
       .select()
       .then(res => {
@@ -463,7 +464,7 @@ export function useReports() {
         .insert({
           description: trimmed,
           outage_id: outageId,
-          user_id: user ? Number(user.id) : null,
+          user_id: user ? user.id : null,
           created_at: new Date().toISOString(),
         })
         .select()
@@ -492,7 +493,7 @@ export function useReports() {
   function addReaction(
     reportId: string,
     reactionType: 'upvote' | 'downvote',
-    user = 'You',
+    userName = 'You',
     commentId?: string,
   ) {
     setReports(prev => {
@@ -507,7 +508,7 @@ export function useReports() {
               reactionType,
               reportId,
               commentId,
-              user,
+              user: userName,
               createdAt: new Date().toISOString(),
             },
           ],
@@ -525,7 +526,7 @@ export function useReports() {
         is_like: reactionType === 'upvote',
         outage_id: Number.isNaN(outageId) ? null : outageId,
         comment_id: commentId ? Number(commentId) : null,
-        user_id: user ? Number(user.id) : null,
+        user_id: user ? user.id : null,
         created_at: new Date().toISOString(),
       })
       .select()

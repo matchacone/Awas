@@ -1,29 +1,49 @@
 'use client'
 
-/** Mock profile data displayed inside the ProfileModal. */
-
-interface ProfileData {
-  firstName: string
-  lastName: string
-  totalReports: number
-  communityPoints: number
-  dateJoined: string
-}
-
-const MOCK_PROFILE: ProfileData = {
-  firstName: 'Jian Bryce',
-  lastName: 'Machacon',
-  totalReports: 24,
-  communityPoints: 1_320,
-  dateJoined: 'January 15, 2025',
-}
+import { useEffect, useState } from 'react'
+import { useAuth } from '@/hooks/useAuth'
+import supabase from '@/lib/supabaseClient'
 
 export default function ProfileContent() {
-  const { firstName, lastName, totalReports, communityPoints, dateJoined } =
-    MOCK_PROFILE
+  const { user } = useAuth()
+  const [totalReports, setTotalReports] = useState(0)
 
+  useEffect(() => {
+    if (!user) return
+
+    async function fetchStats() {
+      const { count } = await supabase
+        .from('api_outagereport')
+        .select('*', { count: 'exact', head: true })
+        .eq('reporter_id', user!.id)
+      
+      if (count !== null) setTotalReports(count)
+    }
+
+    fetchStats()
+  }, [user])
+
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full px-6 text-center">
+        <p className="text-zinc-400 text-sm">Please sign in to view your profile.</p>
+      </div>
+    )
+  }
+
+  const firstName = user.user_metadata?.first_name || 'Anonymous'
+  const lastName = user.user_metadata?.last_name || 'User'
   const initial = firstName.charAt(0).toUpperCase()
   const fullName = `${firstName} ${lastName}`
+  
+  const dateJoined = new Date(user.created_at).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  })
+
+  // We leave community points at 0 for now until a real point system is built
+  const communityPoints = 0
 
   return (
     <div className="flex flex-col items-center gap-5 px-6 py-8 h-full">
@@ -34,10 +54,15 @@ export default function ProfileContent() {
         </span>
       </div>
 
-      {/* ── Name ── */}
-      <h3 className="text-white text-lg font-semibold tracking-wide text-center">
-        {fullName}
-      </h3>
+      {/* ── Name & Email ── */}
+      <div className="text-center">
+        <h3 className="text-white text-lg font-semibold tracking-wide">
+          {fullName}
+        </h3>
+        <p className="text-zinc-400 text-[11px] font-medium tracking-wide">
+          {user.email}
+        </p>
+      </div>
 
       {/* ── Stats row ── */}
       <div className="flex w-full justify-around rounded-xl bg-white/5 border border-white/10 py-4">
@@ -70,3 +95,4 @@ export default function ProfileContent() {
     </div>
   )
 }
+

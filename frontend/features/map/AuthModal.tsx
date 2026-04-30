@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { X, Eye, EyeSlash } from '@phosphor-icons/react'
+import supabase from '@/lib/supabaseClient'
 
 interface AuthModalProps {
   onClose: () => void
@@ -28,20 +29,35 @@ export default function AuthModal({ onClose, onLogin }: AuthModalProps) {
   const [showSignupPassword, setShowSignupPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  // Error state
+  // Error & Loading state
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-  function handleLogin() {
+  async function handleLogin() {
     setError('')
     if (!loginIdentifier.trim() || !loginPassword.trim()) {
       setError('Please fill in all fields.')
       return
     }
-    // Mock login — accept anything
-    onLogin({ email: loginIdentifier.trim() })
+
+    setIsLoading(true)
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+      email: loginIdentifier.trim(),
+      password: loginPassword.trim(),
+    })
+    setIsLoading(false)
+
+    if (authError) {
+      setError(authError.message)
+      return
+    }
+
+    if (data.user) {
+      onLogin({ email: data.user.email ?? '' })
+    }
   }
 
-  function handleSignup() {
+  async function handleSignup() {
     setError('')
     if (
       !email.trim() ||
@@ -62,8 +78,29 @@ export default function AuthModal({ onClose, onLogin }: AuthModalProps) {
       setError('Password must be at least 6 characters.')
       return
     }
-    // Mock signup → auto-login
-    onLogin({ email: email.trim() })
+
+    setIsLoading(true)
+    const { data, error: authError } = await supabase.auth.signUp({
+      email: email.trim(),
+      password: signupPassword,
+      options: {
+        data: {
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          username: username.trim(),
+        }
+      }
+    })
+    setIsLoading(false)
+
+    if (authError) {
+      setError(authError.message)
+      return
+    }
+
+    if (data.user) {
+      onLogin({ email: data.user.email ?? '' })
+    }
   }
 
   function switchToSignup() {
@@ -150,9 +187,10 @@ export default function AuthModal({ onClose, onLogin }: AuthModalProps) {
 
               <button
                 onClick={handleLogin}
-                className="h-10 bg-white/10 border border-white/20 rounded-lg text-white text-sm font-bold tracking-wider uppercase hover:bg-white/20 transition-colors mt-1"
+                disabled={isLoading}
+                className="h-10 bg-white/10 border border-white/20 rounded-lg text-white text-sm font-bold tracking-wider uppercase hover:bg-white/20 transition-colors mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Sign In
+                {isLoading ? 'Signing In...' : 'Sign In'}
               </button>
 
               <p className="text-center text-zinc-500 text-xs mt-1">
@@ -274,9 +312,10 @@ export default function AuthModal({ onClose, onLogin }: AuthModalProps) {
 
               <button
                 onClick={handleSignup}
-                className="h-10 bg-white/10 border border-white/20 rounded-lg text-white text-sm font-bold tracking-wider uppercase hover:bg-white/20 transition-colors mt-1"
+                disabled={isLoading}
+                className="h-10 bg-white/10 border border-white/20 rounded-lg text-white text-sm font-bold tracking-wider uppercase hover:bg-white/20 transition-colors mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Account
+                {isLoading ? 'Creating...' : 'Create Account'}
               </button>
 
               <p className="text-center text-zinc-500 text-xs mt-1">
