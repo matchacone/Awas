@@ -7,6 +7,7 @@ import { useReports } from './useReports'
 import ReportModal from './ReportModal'
 import AlertsModal from './AlertsModal'
 import UpdatesModal from './UpdatesModal'
+import ProfileModal from './ProfileModal'
 import type { ReportType } from './types'
 import { DropIcon, PlusIcon } from '@phosphor-icons/react'
 
@@ -17,6 +18,7 @@ export default function MapPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isAlertsOpen, setIsAlertsOpen] = useState(false)
   const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   // cast needed: useRef<T|null>(null) returns RefObject (readonly) in React 19 types
   const mapRef = useRef<L.Map | null>(null) as React.MutableRefObject<L.Map | null>
 
@@ -42,7 +44,7 @@ export default function MapPage() {
               Live Map
             </button>
             <button
-              onClick={() => setIsAlertsOpen(prev => !prev)}
+              onClick={() => { setIsAlertsOpen(prev => !prev); setIsUpdatesOpen(false); setIsProfileOpen(false) }}
               className={`px-2 py-1 rounded-md transition-colors ${
                 isAlertsOpen
                   ? 'bg-white/10 text-white border border-white/20'
@@ -52,7 +54,7 @@ export default function MapPage() {
               Alerts
             </button>
             <button
-              onClick={() => setIsUpdatesOpen(prev => !prev)}
+              onClick={() => { setIsUpdatesOpen(prev => !prev); setIsAlertsOpen(false); setIsProfileOpen(false) }}
               className={`px-2 py-1 rounded-md transition-colors ${
                 isUpdatesOpen
                   ? 'bg-white/10 text-white border border-white/20'
@@ -61,7 +63,14 @@ export default function MapPage() {
             >
               Updates
             </button>
-            <button className="px-2 py-1 rounded-md text-zinc-300 hover:text-white hover:bg-white/10 transition-colors">
+            <button
+              onClick={() => { setIsProfileOpen(prev => !prev); setIsUpdatesOpen(false); setIsAlertsOpen(false) }}
+              className={`px-2 py-1 rounded-md transition-colors ${
+                isProfileOpen
+                  ? 'bg-white/10 text-white border border-white/20'
+                  : 'text-zinc-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
               Profile
             </button>
           </nav>
@@ -165,6 +174,10 @@ export default function MapPage() {
 
         {isUpdatesOpen && (
           <UpdatesModal onClose={() => setIsUpdatesOpen(false)} reports={reports} />
+        )}
+
+        {isProfileOpen && (
+          <ProfileModal onClose={() => setIsProfileOpen(false)} />
         )}
       </div>
 
