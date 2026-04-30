@@ -14,7 +14,7 @@ import { DropIcon, PlusIcon } from '@phosphor-icons/react'
 const MapView = dynamic(() => import('./MapView'), { ssr: false })
 
 export default function MapPage() {
-  const { reports, addReport } = useReports()
+  const { reports, addReport, addComment, addReaction } = useReports()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isAlertsOpen, setIsAlertsOpen] = useState(false)
   const [isUpdatesOpen, setIsUpdatesOpen] = useState(false)
@@ -171,6 +171,12 @@ export default function MapPage() {
           <ReportDetailsBar
             report={selectedReport}
             onClose={() => setSelectedReportId(null)}
+            onAddComment={(description, user) =>
+              addComment(selectedReport.id, description, user)
+            }
+            onAddReaction={(reactionType, commentId, user) =>
+              addReaction(selectedReport.id, reactionType, user, commentId)
+            }
           />
         )}
 
