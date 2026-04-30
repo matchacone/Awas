@@ -44,7 +44,8 @@ export default function ReportModal({ onClose, onSubmit, initialCenter }: Props)
       attributionControl: false,
     }).setView([center.lat, center.lng], DEFAULT_ZOOM)
 
-    L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
+    const stadiaKey = process.env.NEXT_PUBLIC_STADIA_API_KEY
+    L.tileLayer(`https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png${stadiaKey ? `?api_key=${stadiaKey}` : ''}`, {
       minZoom: 0,
       maxZoom: 20,
       attribution:
