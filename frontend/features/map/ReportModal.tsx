@@ -1,20 +1,86 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 import type { ReportType } from './types'
 
 type Props = {
   onClose: () => void
-  onSubmit: (type: ReportType, description?: string) => void
+  onSubmit: (type: ReportType, lat: number, lng: number, description?: string) => void
+  initialCenter?: { lat: number; lng: number }
 }
 
-export default function ReportModal({ onClose, onSubmit }: Props) {
+const DEFAULT_CENTER = { lat: 10.3157, lng: 123.8854 }
+const DEFAULT_ZOOM = 14
+
+const pinIcon = L.divIcon({
+  className: '',
+  html:
+    '<div style="width:16px;height:16px;border-radius:999px;background:#f43f5e;border:2px solid #ffffff;box-shadow:0 0 0 4px rgba(244,63,94,0.2);"></div>',
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+})
+
+export default function ReportModal({ onClose, onSubmit, initialCenter }: Props) {
   const [type, setType] = useState<ReportType | null>(null)
   const [description, setDescription] = useState('')
+  const [pickedLocation, setPickedLocation] = useState<L.LatLngLiteral | null>(null)
+  const mapContainerRef = useRef<HTMLDivElement | null>(null)
+  const mapRef = useRef<L.Map | null>(null)
+  const markerRef = useRef<L.Marker | null>(null)
+
+  useEffect(() => {
+    const container = mapContainerRef.current
+    if (!container) return
+
+    if ('_leaflet_id' in container) {
+      delete (container as { _leaflet_id?: number })._leaflet_id
+    }
+
+    const center = initialCenter ?? DEFAULT_CENTER
+    const createdMap = L.map(container, {
+      zoomControl: false,
+      attributionControl: false,
+    }).setView([center.lat, center.lng], DEFAULT_ZOOM)
+
+    L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
+      minZoom: 0,
+      maxZoom: 20,
+      attribution:
+        '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(createdMap)
+
+    function updatePin(latlng: L.LatLng) {
+      setPickedLocation({ lat: latlng.lat, lng: latlng.lng })
+      if (!markerRef.current) {
+        markerRef.current = L.marker(latlng, { draggable: true, icon: pinIcon }).addTo(createdMap)
+        markerRef.current.on('dragend', () => {
+          const next = markerRef.current?.getLatLng()
+          if (next) updatePin(next)
+        })
+        return
+      }
+      markerRef.current.setLatLng(latlng)
+    }
+
+    createdMap.on('click', event => updatePin(event.latlng))
+
+    mapRef.current = createdMap
+
+    return () => {
+      createdMap.remove()
+      mapRef.current = null
+      markerRef.current = null
+      if ('_leaflet_id' in container) {
+        delete (container as { _leaflet_id?: number })._leaflet_id
+      }
+    }
+  }, [initialCenter])
 
   function handleSubmit() {
-    if (!type) return
-    onSubmit(type, description.trim() || undefined)
+    if (!type || !pickedLocation) return
+    onSubmit(type, pickedLocation.lat, pickedLocation.lng, description.trim() || undefined)
   }
 
   return (
@@ -65,9 +131,19 @@ export default function ReportModal({ onClose, onSubmit }: Props) {
 
           <div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Location</p>
-            <div className="h-9 bg-white/[0.06] border border-white/10 rounded-lg flex items-center px-3 gap-2">
-              <span className="text-sm">📍</span>
-              <span className="text-xs text-zinc-400">Using current map center</span>
+            <div className="rounded-lg border border-white/10 bg-white/[0.04] p-2">
+              <div
+                ref={mapContainerRef}
+                className="h-36 w-full rounded-md overflow-hidden border border-white/10"
+              />
+              <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-400">
+                <span>Tap the map to drop a pin</span>
+                <span className="tabular-nums">
+                  {pickedLocation
+                    ? `${pickedLocation.lat.toFixed(5)}, ${pickedLocation.lng.toFixed(5)}`
+                    : 'No pin yet'}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -89,7 +165,7 @@ export default function ReportModal({ onClose, onSubmit }: Props) {
 
           <button
             onClick={handleSubmit}
-            disabled={!type}
+            disabled={!type || !pickedLocation}
             className="h-10 bg-red-500 rounded-lg text-white text-xs font-bold tracking-wider uppercase disabled:opacity-40 disabled:cursor-not-allowed hover:bg-red-400 transition-colors"
           >
             Submit Report
