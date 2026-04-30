@@ -19,13 +19,14 @@ export default function MapPage() {
   const [isAlertsOpen, setIsAlertsOpen] = useState(false)
   const [isUpdatesOpen, setIsUpdatesOpen] = useState(false)
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null)
+  const [modalCenter, setModalCenter] = useState<{ lat: number; lng: number } | undefined>(
+    undefined
+  )
   // cast needed: useRef<T|null>(null) returns RefObject (readonly) in React 19 types
   const mapRef = useRef<L.Map | null>(null) as React.MutableRefObject<L.Map | null>
 
-  function handleSubmit(type: ReportType, description?: string) {
-    const center = mapRef.current?.getCenter()
-    if (!center) return
-    addReport(type, center.lat, center.lng, description)
+  function handleSubmit(type: ReportType, lat: number, lng: number, description?: string) {
+    addReport(type, lat, lng, description)
     setIsModalOpen(false)
   }
 
@@ -47,21 +48,19 @@ export default function MapPage() {
             </button>
             <button
               onClick={() => setIsAlertsOpen(prev => !prev)}
-              className={`px-2 py-1 rounded-md transition-colors ${
-                isAlertsOpen
+              className={`px-2 py-1 rounded-md transition-colors ${isAlertsOpen
                   ? 'bg-white/10 text-white border border-white/20'
                   : 'text-zinc-300 hover:text-white hover:bg-white/10'
-              }`}
+                }`}
             >
               Alerts
             </button>
             <button
               onClick={() => setIsUpdatesOpen(prev => !prev)}
-              className={`px-2 py-1 rounded-md transition-colors ${
-                isUpdatesOpen
+              className={`px-2 py-1 rounded-md transition-colors ${isUpdatesOpen
                   ? 'bg-white/10 text-white border border-white/20'
                   : 'text-zinc-300 hover:text-white hover:bg-white/10'
-              }`}
+                }`}
             >
               Updates
             </button>
@@ -73,7 +72,11 @@ export default function MapPage() {
 
         <div className="flex flex-1 items-center justify-end min-w-0">
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              const center = mapRef.current?.getCenter()
+              setModalCenter(center ? { lat: center.lat, lng: center.lng } : undefined)
+              setIsModalOpen(true)
+            }}
             className="flex items-center gap-2 px-3 py-1 rounded-md bg-transparent hover:bg-neutral-200/60 hover:text-black text-white text-[14px] font-semibold tracking-wide transition-colors ease-in-out duration-400"
             aria-label="Add report"
           >
@@ -95,68 +98,68 @@ export default function MapPage() {
 
           {/* Legend — bottom left */}
           <div className="absolute bottom-16 left-3 z-999">
-            <div className = "flex flex-col space-y-4">
-              <div className = "bg-neutral-600/80 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2">
-                <p className = "text-[12px] font-bold uppercase tracking-widest text-white mb-1.5">
+            <div className="flex flex-col space-y-4">
+              <div className="bg-neutral-600/80 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2">
+                <p className="text-[12px] font-bold uppercase tracking-widest text-white mb-1.5">
                   Issue Type
                 </p>
-  
-                <div className = "flex flex-col space-y-2 text-white/80 text-[12px]">
-                  <div className = "flex items-center justify-between gap-4">
+
+                <div className="flex flex-col space-y-2 text-white/80 text-[12px]">
+                  <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
-                      <span className = "w-2.5 h-2.5 rounded-full bg-red-600" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-red-600" />
                       <p>No Water</p>
                     </div>
-  
-                    <p className = "text-[10px] text-gray-400">114</p>
+
+                    <p className="text-[10px] text-gray-400">114</p>
                   </div>
-  
-                  <div className = "flex items-center justify-between gap-4">
+
+                  <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
-                      <span className = "w-2.5 h-2.5 rounded-full bg-orange-400" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-orange-400" />
                       <p>Low Pressure</p>
                     </div>
-  
-                    <p className = "text-[10px] text-gray-400">34</p>
+
+                    <p className="text-[10px] text-gray-400">34</p>
                   </div>
-                  
-                  <div className = "flex items-center justify-between gap-4">
+
+                  <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
-                      <span className = "w-2.5 h-2.5 rounded-full bg-blue-400" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-blue-400" />
                       <p>Pipe Leak</p>
                     </div>
 
-                    <p className = "text-[10px] text-gray-400">34</p>
+                    <p className="text-[10px] text-gray-400">34</p>
                   </div>
-                  
-                  <div className = "flex items-center justify-between gap-4">
+
+                  <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
-                      <span className = "w-2.5 h-2.5 rounded-full bg-amber-900" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-900" />
                       <p>Dirty Water</p>
                     </div>
 
-                    <p className = "text-[10px] text-gray-400">8</p>
+                    <p className="text-[10px] text-gray-400">8</p>
                   </div>
                 </div>
               </div>
-              
-              <div className = "bg-neutral-600/80 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2">
-                <p className = "text-[12px] font-bold uppercase tracking-widest text-white mb-1.5">
+
+              <div className="bg-neutral-600/80 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2">
+                <p className="text-[12px] font-bold uppercase tracking-widest text-white mb-1.5">
                   Severity
                 </p>
-  
+
                 <div className="flex flex-col space-y-1.5 text-white/80 text-[11px]">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
                     <p>High</p>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-orange-500" />
                     <p>Medium</p>
                   </div>
-                  
-                  <div className = "flex items-center gap-2">
+
+                  <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
                     <p>Low</p>
                   </div>
@@ -199,6 +202,7 @@ export default function MapPage() {
         <ReportModal
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleSubmit}
+          initialCenter={modalCenter}
         />
       )}
     </div>
