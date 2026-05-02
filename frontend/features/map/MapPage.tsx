@@ -48,7 +48,7 @@ export default function MapPage() {
   return (
     <div className="w-full h-screen overflow-hidden flex flex-col">
       {/* Top bar */}
-      <div className="px-8 py-8 z-999 h-10 bg-gray-700/50 backdrop-blur-sm flex items-center justify-between gap-2 shrink-0">
+      <div className="px-8 py-8 z-999 h-10 bg-gray-700/65 backdrop-blur-sm flex items-center justify-between gap-2 shrink-0">
         <div className="flex flex-1 items-center justify-start gap-2 min-w-0">
           <DropIcon />
           <span className="text-white font-bold tracking-widest">AWAS</span>
