@@ -4,6 +4,8 @@ import dynamic from 'next/dynamic'
 import { useRef, useState } from 'react'
 import type L from 'leaflet'
 import { useReports } from './useReports'
+import { useAuth } from '@/hooks/useAuth'
+import supabase from '@/lib/supabaseClient'
 const ReportModal = dynamic(() => import('./ReportModal'), { ssr: false })
 import AlertsModal from './AlertsModal'
 import UpdatesModal from './UpdatesModal'
@@ -21,7 +23,8 @@ export default function MapPage() {
   const [isAlertsOpen, setIsAlertsOpen] = useState(false)
   const [isUpdatesOpen, setIsUpdatesOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const [isSignedIn, setIsSignedIn] = useState(false)
+  const { user } = useAuth()
+  const isSignedIn = Boolean(user)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null)
   const mapRef = useRef<L.Map | null>(null) as React.MutableRefObject<L.Map | null>
@@ -96,12 +99,14 @@ export default function MapPage() {
             <PlusIcon />
             Add Report
           </button>
-          {isSignedIn ? (
-            <button
-              onClick={() => setIsSignedIn(false)}
-              className="flex items-center gap-2 px-3 py-1 rounded-md bg-transparent hover:bg-neutral-200/60 hover:text-black text-white text-[14px] font-semibold tracking-wide transition-colors ease-in-out duration-400"
-              aria-label="Sign out"
-            >
+            {isSignedIn ? (
+              <button
+                onClick={() => {
+                  supabase.auth.signOut()
+                }}
+                className="flex items-center gap-2 px-3 py-1 rounded-md bg-transparent hover:bg-neutral-200/60 hover:text-black text-white text-[14px] font-semibold tracking-wide transition-colors ease-in-out duration-400"
+                aria-label="Sign out"
+              >
               <SignOut size={16} />
               Sign Out
             </button>
@@ -246,10 +251,7 @@ export default function MapPage() {
       {isAuthModalOpen && (
         <AuthModal
           onClose={() => setIsAuthModalOpen(false)}
-          onLogin={() => {
-            setIsSignedIn(true)
-            setIsAuthModalOpen(false)
-          }}
+          onLogin={() => setIsAuthModalOpen(false)}
         />
       )}
     </div>
