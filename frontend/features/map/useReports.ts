@@ -381,12 +381,13 @@ export function useReports() {
   }, [])
 
   function addReport(type: ReportType, lat: number, lng: number, description?: string) {
+    const trimmedDescription = description?.trim()
     const report: Report = {
       id: crypto.randomUUID(),
       type,
       lat,
       lng,
-      description,
+      description: trimmedDescription ? trimmedDescription : undefined,
       timestamp: new Date().toISOString(),
       active: true,
       comments: [],
@@ -406,7 +407,7 @@ export function useReports() {
           .from('api_outagereport')
           .insert({
             location: '',
-            description: report.description,
+            description: trimmedDescription ?? '',
             issuetype: report.type,
             latitude: report.lat,
             longitude: report.lng,
