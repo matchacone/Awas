@@ -1,0 +1,4 @@
+# Graphify
+graphify-out/**
+*.txt
+.graphify_python
