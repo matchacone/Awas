@@ -1,8 +1,8 @@
 'use client'
 
-import { X } from '@phosphor-icons/react'
 import { useState, useMemo } from 'react'
 import type { Report } from './types'
+import { BellIcon, XIcon } from '@phosphor-icons/react'
 
 interface AlertsModalProps {
   onClose: () => void
@@ -32,15 +32,17 @@ export default function AlertsModal({ onClose, reports }: AlertsModalProps) {
   return (
     <div className="h-full w-80 shrink-0 bg-gray-700/65 backdrop-blur-md border-l border-white/10 shadow-2xl flex flex-col">
       <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
-        <h2 className="text-white text-sm font-bold uppercase tracking-widest">
-          🔔 Active Alerts
-        </h2>
+        <div className = "w-full flex flex-row">
+          <h2 className="flex items-center gap-2 text-white text-sm font-bold uppercase tracking-widest">
+            <BellIcon size={16} /> <span>Active Alerts</span>
+          </h2>
+        </div>
         <button
           onClick={onClose}
           className="text-zinc-400 hover:text-white transition-colors"
           aria-label="Close alerts"
         >
-          <X size={18} weight="bold" />
+          <XIcon size={18} weight="bold" />
         </button>
       </div>
 

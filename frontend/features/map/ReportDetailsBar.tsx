@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import type { ReactionType, Report } from './types'
-import { X } from '@phosphor-icons/react'
+import { XIcon, ArrowUpIcon, ArrowDownIcon } from '@phosphor-icons/react'
 
  type Props = {
    report: Report
@@ -66,7 +66,7 @@ export default function ReportDetailsBar({ report, onClose, onAddComment, onAddR
           className="text-zinc-400 hover:text-white transition-colors"
           aria-label="Close report details"
         >
-          <X size={18} weight="bold" />
+          <XIcon size={18} weight="bold" />
         </button>
       </div>
 
@@ -108,25 +108,23 @@ export default function ReportDetailsBar({ report, onClose, onAddComment, onAddR
             Reactions
           </p>
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-[11px] text-zinc-200">
-              👍 {reportReactionCounts.upvote}
-            </span>
-            <span className="flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-[11px] text-zinc-200">
-              👎 {reportReactionCounts.downvote}
-            </span>
             <button
               onClick={() => onAddReaction('upvote')}
-              className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white hover:border-white/30"
+              className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white hover:border-white/30"
               type="button"
+              aria-label="Upvote"
             >
-              Upvote
+              <ArrowUpIcon size={12} weight="bold" />
+              {reportReactionCounts.upvote}
             </button>
             <button
               onClick={() => onAddReaction('downvote')}
-              className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white hover:border-white/30"
+              className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white hover:border-white/30"
               type="button"
+              aria-label="Downvote"
             >
-              Downvote
+              <ArrowDownIcon size={12} weight="bold" />
+              {reportReactionCounts.downvote}
             </button>
           </div>
         </div>
@@ -165,25 +163,23 @@ export default function ReportDetailsBar({ report, onClose, onAddComment, onAddR
                     </div>
                     <p className="text-[11px] text-zinc-300 mt-1">{comment.description}</p>
                     <div className="flex items-center gap-2 mt-2">
-                      <span className="flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-[10px] text-zinc-300">
-                        👍 {commentReactionCounts.upvote}
-                      </span>
-                      <span className="flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-[10px] text-zinc-300">
-                        👎 {commentReactionCounts.downvote}
-                      </span>
                       <button
                         onClick={() => onAddReaction('upvote', comment.id)}
-                        className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-white hover:border-white/30"
+                        className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-white hover:border-white/30"
                         type="button"
+                        aria-label="Upvote comment"
                       >
-                        Upvote
+                        <ArrowUpIcon size={10} weight="bold" />
+                        {commentReactionCounts.upvote}
                       </button>
                       <button
                         onClick={() => onAddReaction('downvote', comment.id)}
-                        className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-white hover:border-white/30"
+                        className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-white hover:border-white/30"
                         type="button"
+                        aria-label="Downvote comment"
                       >
-                        Downvote
+                        <ArrowDownIcon size={10} weight="bold" />
+                        {commentReactionCounts.downvote}
                       </button>
                     </div>
                   </div>
