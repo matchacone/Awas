@@ -37,11 +37,18 @@ export default function MapPage() {
   }
 
   const selectedReport = reports.find(report => report.id === selectedReportId)
+  const countsByType = reports.reduce(
+    (acc, report) => {
+      acc[report.type] = (acc[report.type] ?? 0) + 1
+      return acc
+    },
+    { outage: 0, low_pressure: 0, pipe_leak: 0, dirty_water: 0 } as Record<ReportType, number>
+  )
 
   return (
     <div className="w-full h-screen overflow-hidden flex flex-col">
       {/* Top bar */}
-      <div className="px-8 py-8 z-999 h-10 bg-gray-700/50 backdrop-blur-sm flex items-center justify-between gap-2 shrink-0">
+      <div className="px-8 py-8 z-999 h-10 bg-gray-700/65 backdrop-blur-sm flex items-center justify-between gap-2 shrink-0">
         <div className="flex flex-1 items-center justify-start gap-2 min-w-0">
           <DropIcon />
           <span className="text-white font-bold tracking-widest">AWAS</span>
@@ -148,7 +155,7 @@ export default function MapPage() {
                       <p>No Water</p>
                     </div>
 
-                    <p className="text-[10px] text-gray-400">114</p>
+                    <p className="text-[10px] text-gray-400">{countsByType.outage}</p>
                   </div>
 
                   <div className="flex items-center justify-between gap-4">
@@ -157,7 +164,7 @@ export default function MapPage() {
                       <p>Low Pressure</p>
                     </div>
 
-                    <p className="text-[10px] text-gray-400">34</p>
+                    <p className="text-[10px] text-gray-400">{countsByType.low_pressure}</p>
                   </div>
 
                   <div className="flex items-center justify-between gap-4">
@@ -166,7 +173,7 @@ export default function MapPage() {
                       <p>Pipe Leak</p>
                     </div>
 
-                    <p className="text-[10px] text-gray-400">34</p>
+                    <p className="text-[10px] text-gray-400">{countsByType.pipe_leak}</p>
                   </div>
 
                   <div className="flex items-center justify-between gap-4">
@@ -175,7 +182,7 @@ export default function MapPage() {
                       <p>Dirty Water</p>
                     </div>
 
-                    <p className="text-[10px] text-gray-400">8</p>
+                    <p className="text-[10px] text-gray-400">{countsByType.dirty_water}</p>
                   </div>
                 </div>
               </div>

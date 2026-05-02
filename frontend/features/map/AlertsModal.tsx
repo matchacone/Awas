@@ -1,8 +1,8 @@
 'use client'
 
-import { X } from '@phosphor-icons/react'
 import { useState, useMemo } from 'react'
 import type { Report } from './types'
+import { BellIcon, MapPinIcon, XIcon } from '@phosphor-icons/react'
 
 interface AlertsModalProps {
   onClose: () => void
@@ -30,17 +30,19 @@ export default function AlertsModal({ onClose, reports }: AlertsModalProps) {
   }, [reports, filter])
 
   return (
-    <div className="h-full w-80 shrink-0 bg-gray-700/65 backdrop-blur-md border-l border-white/10 shadow-2xl flex flex-col">
+    <div className="h-full w-80 shrink-0 bg-gradient-to-b from-slate-800/85 via-slate-900/80 to-slate-950/85 backdrop-blur-md border-l border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.45)] flex flex-col">
       <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
-        <h2 className="text-white text-sm font-bold uppercase tracking-widest">
-          🔔 Active Alerts
-        </h2>
+        <div className = "w-full flex flex-row">
+          <h2 className="flex items-center gap-2 text-white text-sm font-bold uppercase tracking-widest">
+            <BellIcon size={16} /> <span>Active Alerts</span>
+          </h2>
+        </div>
         <button
           onClick={onClose}
           className="text-zinc-400 hover:text-white transition-colors"
           aria-label="Close alerts"
         >
-          <X size={18} weight="bold" />
+          <XIcon size={18} weight="bold" />
         </button>
       </div>
 
@@ -60,14 +62,14 @@ export default function AlertsModal({ onClose, reports }: AlertsModalProps) {
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div className="flex-1 overflow-y-auto p-4">
         {filteredReports.length === 0 ? (
           <p className="text-zinc-500 text-sm text-center mt-4">No alerts match this filter.</p>
         ) : (
           filteredReports.map((report) => (
             <div
               key={report.id}
-              className="rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 space-y-1"
+              className="py-3 space-y-1 border-b border-white/10 last:border-b-0"
             >
               <div className="flex items-center justify-between">
                 <span
@@ -79,9 +81,19 @@ export default function AlertsModal({ onClose, reports }: AlertsModalProps) {
                 >
                   {report.status === 'critical' ? 'Critical' : 'In Progress'}
                 </span>
-                <span className="text-[10px] text-zinc-500">
-                  {new Date(report.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
+                <div className = "text-[10px] text-zinc-400 flex gap-1">
+                  <span>
+                    {new Date(report.timestamp).toLocaleDateString([], {
+                      year: 'numeric',
+                      month: 'short',
+                      day: '2-digit',
+                    })}
+                  </span>
+                  <span>
+                    {new Date(report.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+
               </div>
 
               <p className="text-white text-xs font-medium">
@@ -92,8 +104,11 @@ export default function AlertsModal({ onClose, reports }: AlertsModalProps) {
                 <p className="text-zinc-400 text-[11px]">{report.description}</p>
               )}
 
-              <p className="text-zinc-500 text-[10px]">
-                📍 {report.lat.toFixed(4)}, {report.lng.toFixed(4)}
+              <p className="flex items-center gap-2 text-zinc-500 text-[10px]">
+                <MapPinIcon size={12} />
+                <span>
+                  {report.lat.toFixed(4)}, {report.lng.toFixed(4)}
+                </span>
               </p>
             </div>
           ))

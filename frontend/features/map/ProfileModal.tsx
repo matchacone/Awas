@@ -9,7 +9,7 @@ interface ProfileModalProps {
 
 export default function ProfileModal({ onClose }: ProfileModalProps) {
   return (
-    <div className="h-full w-96 shrink-0 bg-gray-700/65 backdrop-blur-md border-l border-white/10 shadow-2xl flex flex-col overflow-hidden">
+    <div className="h-full w-96 shrink-0 bg-gradient-to-b from-slate-800/85 via-slate-900/80 to-slate-950/85 backdrop-blur-md border-l border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.45)] flex flex-col overflow-hidden">
       <div className="flex items-center justify-between px-4 py-4 border-b border-white/10 shrink-0">
         <h2 className="text-white text-sm font-bold uppercase tracking-widest">
           Profile

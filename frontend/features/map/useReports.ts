@@ -242,16 +242,51 @@ export function useReports() {
 
     async function load() {
       try {
-        // Load reports from the shared schema (api_outagereport)
-        const { data } = await supabase
-          .from('api_outagereport')
-          .select('*')
-          .order('created_at', { ascending: false })
+        // Load reports, comments, and reactions from Supabase
+        const [reportsRes, commentsRes, reactionsRes] = await Promise.all([
+          supabase.from('api_outagereport').select('*').order('created_at', { ascending: false }),
+          supabase.from('api_comment').select('*').order('created_at', { ascending: false }),
+          supabase.from('api_reaction').select('*').order('created_at', { ascending: false }),
+        ])
 
         if (!mounted) return
-        if (Array.isArray(data)) {
+
+        const commentsByReport = new Map<string, Report['comments']>()
+        if (Array.isArray(commentsRes.data)) {
+          commentsRes.data.forEach((c: any) => {
+            const reportId = String(c.outage_id)
+            const next = commentsByReport.get(reportId) ?? []
+            next.push({
+              id: String(c.id),
+              reportId,
+              user: String(c.user_id ?? 'Unknown'),
+              description: c.description,
+              createdAt: c.created_at ?? new Date().toISOString(),
+            })
+            commentsByReport.set(reportId, next)
+          })
+        }
+
+        const reactionsByReport = new Map<string, Report['reactions']>()
+        if (Array.isArray(reactionsRes.data)) {
+          reactionsRes.data.forEach((rx: any) => {
+            const reportId = String(rx.outage_id)
+            const next = reactionsByReport.get(reportId) ?? []
+            next.push({
+              id: String(rx.id),
+              reactionType: rx.is_like ? 'upvote' : 'downvote',
+              reportId,
+              user: String(rx.user_id ?? 'Unknown'),
+              createdAt: rx.created_at ?? new Date().toISOString(),
+              commentId: rx.comment_id ? String(rx.comment_id) : undefined,
+            })
+            reactionsByReport.set(reportId, next)
+          })
+        }
+
+        if (Array.isArray(reportsRes.data)) {
           // Map DB rows to our Report shape
-          const mapped = data.map((r: any): Report => ({
+          const mapped = reportsRes.data.map((r: any): Report => ({
             id: String(r.id),
             type: r.issuetype,
             lat: r.latitude,
@@ -259,8 +294,8 @@ export function useReports() {
             description: r.description ?? undefined,
             timestamp: r.created_at,
             active: true,
-            comments: [],
-            reactions: [],
+            comments: commentsByReport.get(String(r.id)) ?? [],
+            reactions: reactionsByReport.get(String(r.id)) ?? [],
           }))
           setReports(mapped)
           return
@@ -503,9 +538,30 @@ export function useReports() {
     userName = 'You',
     commentId?: string,
   ) {
+    const actorId = user?.id ?? userName
+    type ReactionAction = 'insert' | 'update' | 'none'
+    const actionRef = { current: 'insert' as ReactionAction }
+
     setReports(prev => {
       const next = prev.map(report => {
         if (report.id !== reportId) return report
+        const existingReaction = report.reactions.find(rx =>
+          rx.user === actorId &&
+          (commentId ? rx.commentId === commentId : !rx.commentId)
+        )
+        if (existingReaction) {
+          if (existingReaction.reactionType === reactionType) {
+            actionRef.current = 'none'
+            return report
+          }
+          actionRef.current = 'update'
+          return {
+            ...report,
+            reactions: report.reactions.map(rx =>
+              rx === existingReaction ? { ...rx, reactionType } : rx
+            ),
+          }
+        }
         return {
           ...report,
           reactions: [
@@ -515,7 +571,7 @@ export function useReports() {
               reactionType,
               reportId,
               commentId,
-              user: userName,
+              user: actorId,
               createdAt: new Date().toISOString(),
             },
           ],
@@ -524,6 +580,25 @@ export function useReports() {
       saveToStorage(next)
       return next
     })
+
+    if (actionRef.current === 'none') return
+    if (actionRef.current === 'update') {
+      if (!user) return
+      const outageId = Number(reportId)
+      ;(async () => {
+        try {
+          await supabase
+            .from('api_reaction')
+            .update({ is_like: reactionType === 'upvote' })
+            .eq('user_id', user.id)
+            .eq('outage_id', Number.isNaN(outageId) ? null : outageId)
+            .eq('comment_id', commentId ? Number(commentId) : null)
+        } catch {
+          // silent fail
+        }
+      })()
+      return
+    }
 
     // Persist reaction to api_reaction — `is_like` is boolean
     const outageId = Number(reportId)
