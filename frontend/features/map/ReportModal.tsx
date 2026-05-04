@@ -86,14 +86,14 @@ export default function ReportModal({ onClose, onSubmit, initialCenter }: Props)
 
   return (
     <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-1000 flex items-center justify-center bg-black/60"
       onClick={onClose}
     >
       <div
-        className="bg-[#0d1117] border border-white/10 rounded-xl w-[90%] max-w-sm overflow-hidden"
+        className="bg-[#0d1117] border border-white/10 rounded-xl w-[92%] max-w-2xl overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/6">
           <span className="text-sm font-bold text-white">Report a Water Issue</span>
           <button
             onClick={onClose}
@@ -106,13 +106,13 @@ export default function ReportModal({ onClose, onSubmit, initialCenter }: Props)
         <div className="p-4 flex flex-col gap-4">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Type</p>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => setType('outage')}
                 className={`flex-1 py-3 rounded-lg border text-center text-xs font-semibold transition-colors ${
                   type === 'outage'
                     ? 'bg-red-500/20 border-red-500 text-red-400'
-                    : 'bg-white/[0.04] border-white/10 text-zinc-400 hover:border-white/20'
+                    : 'bg-white/4 border-white/10 text-zinc-400 hover:border-white/20'
                 }`}
               >
                 🚱 No Water
@@ -122,7 +122,7 @@ export default function ReportModal({ onClose, onSubmit, initialCenter }: Props)
                 className={`flex-1 py-3 rounded-lg border text-center text-xs font-semibold transition-colors ${
                   type === 'low_pressure'
                     ? 'bg-orange-500/20 border-orange-400 text-orange-400'
-                    : 'bg-white/[0.04] border-white/10 text-zinc-400 hover:border-white/20'
+                    : 'bg-white/4 border-white/10 text-zinc-400 hover:border-white/20'
                 }`}
               >
                 💧 Low Pressure
@@ -132,7 +132,7 @@ export default function ReportModal({ onClose, onSubmit, initialCenter }: Props)
                 className={`flex-1 py-3 rounded-lg border text-center text-xs font-semibold transition-colors ${
                   type === 'pipe_leak'
                     ? 'bg-blue-500/20 border-blue-400 text-blue-400'
-                    : 'bg-white/[0.04] border-white/10 text-zinc-400 hover:border-white/20'
+                    : 'bg-white/4 border-white/10 text-zinc-400 hover:border-white/20'
                 }`}
               >
                 🛠️ Pipe Leak
@@ -142,7 +142,7 @@ export default function ReportModal({ onClose, onSubmit, initialCenter }: Props)
                 className={`flex-1 py-3 rounded-lg border text-center text-xs font-semibold transition-colors ${
                   type === 'dirty_water'
                     ? 'bg-amber-700/20 border-amber-600 text-amber-400'
-                    : 'bg-white/[0.04] border-white/10 text-zinc-400 hover:border-white/20'
+                    : 'bg-white/4 border-white/10 text-zinc-400 hover:border-white/20'
                 }`}
               >
                 🧪 Dirty Water
@@ -152,10 +152,10 @@ export default function ReportModal({ onClose, onSubmit, initialCenter }: Props)
 
           <div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Location</p>
-            <div className="rounded-lg border border-white/10 bg-white/[0.04] p-2">
+            <div className="rounded-lg border border-white/10 bg-white/4 p-2">
               <div
                 ref={mapContainerRef}
-                className="h-36 w-full rounded-md overflow-hidden border border-white/10"
+                className="h-56 w-full rounded-md overflow-hidden border border-white/10"
               />
               <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-400">
                 <span>Tap the map to drop a pin</span>
@@ -180,7 +180,7 @@ export default function ReportModal({ onClose, onSubmit, initialCenter }: Props)
               onChange={e => setDescription(e.target.value)}
               placeholder="e.g. No water since 6am..."
               rows={2}
-              className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-zinc-600 resize-none focus:outline-none focus:border-white/20"
+              className="w-full bg-white/6 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-zinc-600 resize-none focus:outline-none focus:border-white/20"
             />
           </div>
 

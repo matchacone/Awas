@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type L from 'leaflet'
 import { useReports } from './useReports'
 import { useAuth } from '@/hooks/useAuth'
@@ -12,7 +12,7 @@ import UpdatesModal from './UpdatesModal'
 import ProfileModal from './ProfileModal'
 import ReportDetailsBar from './ReportDetailsBar'
 import type { ReportType } from './types'
-import { DropIcon, PlusIcon, SignIn, SignOut } from '@phosphor-icons/react'
+import { DropIcon, PlusIcon, SignInIcon, SignOutIcon } from '@phosphor-icons/react'
 import AuthModal from './AuthModal'
 
 const MapView = dynamic(() => import('./MapView'), { ssr: false })
@@ -28,13 +28,31 @@ export default function MapPage() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null)
   const mapRef = useRef<L.Map | null>(null) as React.MutableRefObject<L.Map | null>
+  const [showReportAdded, setShowReportAdded] = useState(false)
+  const reportAddedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [modalCenter, setModalCenter] = useState<{ lat: number; lng: number } | undefined>(
     undefined
   )
   function handleSubmit(type: ReportType, lat: number, lng: number, description?: string) {
     addReport(type, lat, lng, description)
+    setShowReportAdded(true)
+    if (reportAddedTimerRef.current) {
+      clearTimeout(reportAddedTimerRef.current)
+    }
+    reportAddedTimerRef.current = setTimeout(() => {
+      setShowReportAdded(false)
+      reportAddedTimerRef.current = null
+    }, 2200)
     setIsModalOpen(false)
   }
+
+  useEffect(() => {
+    return () => {
+      if (reportAddedTimerRef.current) {
+        clearTimeout(reportAddedTimerRef.current)
+      }
+    }
+  }, [])
 
   const selectedReport = reports.find(report => report.id === selectedReportId)
   const countsByType = reports.reduce(
@@ -100,7 +118,7 @@ export default function MapPage() {
               setModalCenter(center ? { lat: center.lat, lng: center.lng } : undefined)
               setIsModalOpen(true)
             }}
-            className="flex items-center gap-2 px-3 py-1 rounded-md bg-transparent hover:bg-neutral-200/60 hover:text-black text-white text-[14px] font-semibold tracking-wide transition-colors ease-in-out duration-400"
+            className="flex items-center gap-2 px-4 py-1 rounded-md bg-transparent hover:bg-neutral-200/60 hover:text-black text-white text-[14px] font-semibold tracking-wide transition-colors ease-in-out duration-400"
             aria-label="Add report"
           >
             <PlusIcon />
@@ -114,7 +132,7 @@ export default function MapPage() {
                 className="flex items-center gap-2 px-3 py-1 rounded-md bg-transparent hover:bg-neutral-200/60 hover:text-black text-white text-[14px] font-semibold tracking-wide transition-colors ease-in-out duration-400"
                 aria-label="Sign out"
               >
-              <SignOut size={16} />
+              <SignOutIcon size={16} />
               Sign Out
             </button>
           ) : (
@@ -123,7 +141,7 @@ export default function MapPage() {
               className="flex items-center gap-2 px-3 py-1 rounded-md bg-transparent hover:bg-neutral-200/60 hover:text-black text-white text-[14px] font-semibold tracking-wide transition-colors ease-in-out duration-400"
               aria-label="Sign in"
             >
-              <SignIn size={16} />
+              <SignInIcon size={16} />
               Sign In
             </button>
           )}
@@ -260,6 +278,19 @@ export default function MapPage() {
           onClose={() => setIsAuthModalOpen(false)}
           onLogin={() => setIsAuthModalOpen(false)}
         />
+      )}
+
+      {showReportAdded && (
+        <div className="fixed bottom-4 right-4 z-[1100]">
+          <div
+            role="status"
+            aria-live="polite"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-100 text-[12px] font-semibold tracking-wide border border-emerald-400/30 shadow-lg backdrop-blur animate-slide-up"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            Report added
+          </div>
+        </div>
       )}
     </div>
   )
