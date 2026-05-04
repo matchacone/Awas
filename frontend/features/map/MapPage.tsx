@@ -12,7 +12,7 @@ import UpdatesModal from './UpdatesModal'
 import ProfileModal from './ProfileModal'
 import ReportDetailsBar from './ReportDetailsBar'
 import type { ReportType } from './types'
-import { DropIcon, PlusIcon, SignIn, SignOut } from '@phosphor-icons/react'
+import { DropIcon, PlusIcon, SignInIcon, SignOutIcon } from '@phosphor-icons/react'
 import AuthModal from './AuthModal'
 
 const MapView = dynamic(() => import('./MapView'), { ssr: false })
@@ -118,7 +118,7 @@ export default function MapPage() {
               setModalCenter(center ? { lat: center.lat, lng: center.lng } : undefined)
               setIsModalOpen(true)
             }}
-            className="flex items-center gap-2 px-3 py-1 rounded-md bg-transparent hover:bg-neutral-200/60 hover:text-black text-white text-[14px] font-semibold tracking-wide transition-colors ease-in-out duration-400"
+            className="flex items-center gap-2 px-4 py-1 rounded-md bg-transparent hover:bg-neutral-200/60 hover:text-black text-white text-[14px] font-semibold tracking-wide transition-colors ease-in-out duration-400"
             aria-label="Add report"
           >
             <PlusIcon />
@@ -132,7 +132,7 @@ export default function MapPage() {
                 className="flex items-center gap-2 px-3 py-1 rounded-md bg-transparent hover:bg-neutral-200/60 hover:text-black text-white text-[14px] font-semibold tracking-wide transition-colors ease-in-out duration-400"
                 aria-label="Sign out"
               >
-              <SignOut size={16} />
+              <SignOutIcon size={16} />
               Sign Out
             </button>
           ) : (
@@ -141,7 +141,7 @@ export default function MapPage() {
               className="flex items-center gap-2 px-3 py-1 rounded-md bg-transparent hover:bg-neutral-200/60 hover:text-black text-white text-[14px] font-semibold tracking-wide transition-colors ease-in-out duration-400"
               aria-label="Sign in"
             >
-              <SignIn size={16} />
+              <SignInIcon size={16} />
               Sign In
             </button>
           )}

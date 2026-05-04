@@ -90,7 +90,7 @@ export default function ReportModal({ onClose, onSubmit, initialCenter }: Props)
       onClick={onClose}
     >
       <div
-        className="bg-[#0d1117] border border-white/10 rounded-xl w-[90%] max-w-sm overflow-hidden"
+        className="bg-[#0d1117] border border-white/10 rounded-xl w-[92%] max-w-2xl overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/6">
@@ -155,7 +155,7 @@ export default function ReportModal({ onClose, onSubmit, initialCenter }: Props)
             <div className="rounded-lg border border-white/10 bg-white/4 p-2">
               <div
                 ref={mapContainerRef}
-                className="h-36 w-full rounded-md overflow-hidden border border-white/10"
+                className="h-56 w-full rounded-md overflow-hidden border border-white/10"
               />
               <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-400">
                 <span>Tap the map to drop a pin</span>
