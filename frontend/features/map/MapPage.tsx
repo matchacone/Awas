@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type L from 'leaflet'
 import { useReports } from './useReports'
 import { useAuth } from '@/hooks/useAuth'
@@ -28,13 +28,31 @@ export default function MapPage() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null)
   const mapRef = useRef<L.Map | null>(null) as React.MutableRefObject<L.Map | null>
+  const [showReportAdded, setShowReportAdded] = useState(false)
+  const reportAddedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [modalCenter, setModalCenter] = useState<{ lat: number; lng: number } | undefined>(
     undefined
   )
   function handleSubmit(type: ReportType, lat: number, lng: number, description?: string) {
     addReport(type, lat, lng, description)
+    setShowReportAdded(true)
+    if (reportAddedTimerRef.current) {
+      clearTimeout(reportAddedTimerRef.current)
+    }
+    reportAddedTimerRef.current = setTimeout(() => {
+      setShowReportAdded(false)
+      reportAddedTimerRef.current = null
+    }, 2200)
     setIsModalOpen(false)
   }
+
+  useEffect(() => {
+    return () => {
+      if (reportAddedTimerRef.current) {
+        clearTimeout(reportAddedTimerRef.current)
+      }
+    }
+  }, [])
 
   const selectedReport = reports.find(report => report.id === selectedReportId)
   const countsByType = reports.reduce(
@@ -260,6 +278,19 @@ export default function MapPage() {
           onClose={() => setIsAuthModalOpen(false)}
           onLogin={() => setIsAuthModalOpen(false)}
         />
+      )}
+
+      {showReportAdded && (
+        <div className="fixed bottom-4 right-4 z-[1100]">
+          <div
+            role="status"
+            aria-live="polite"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-100 text-[12px] font-semibold tracking-wide border border-emerald-400/30 shadow-lg backdrop-blur animate-slide-up"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            Report added
+          </div>
+        </div>
       )}
     </div>
   )
